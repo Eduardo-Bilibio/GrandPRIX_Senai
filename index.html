@@ -3,16 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Petrobras AR - Smart Dashboard</title>
+  <title>Petrobras AR - Portal de Monitoramento</title>
   
   <style>
     :root {
-      --primary: #00ff88;
-      --secondary: #00d4ff;
-      --alert: #ff6b6b;
-      --bg: #0f2027;
-      --glass: rgba(255, 255, 255, 0.05);
-      --glass-border: rgba(255, 255, 255, 0.1);
+      --petro-verde: #008542;
+      --petro-amarelo: #FFD100;
+      --petro-cinza: #f4f4f4;
+      --text-dark: #333;
+      --white: #ffffff;
     }
 
     * {
@@ -22,216 +21,225 @@
     }
 
     body {
-      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: radial-gradient(circle at top, #203a43, #0f2027);
-      color: #e0e0e0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background-color: var(--petro-cinza);
+      color: var(--text-dark);
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      line-height: 1.6;
     }
 
     .container {
       width: 100%;
-      max-width: 450px;
-      padding: 30px 20px;
+      max-width: 480px;
+      background: var(--white);
+      min-height: 100vh;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
     }
 
-    /* Typography */
+    /* Header com Logo */
+    header {
+      background-color: var(--white);
+      padding: 25px;
+      text-align: center;
+      border-bottom: 4px solid var(--petro-amarelo);
+    }
+
+    .logo-container {
+      margin-bottom: 10px;
+    }
+
+    /* Representação da Logo via CSS para não depender de link externo */
+    .logo-mock {
+      font-weight: 900;
+      font-size: 1.5rem;
+      color: var(--petro-verde);
+      letter-spacing: -1px;
+    }
+    .logo-mock span { color: var(--petro-amarelo); }
+
     h1 {
-      font-size: 1.8rem;
-      letter-spacing: 2px;
+      font-size: 1rem;
+      color: var(--petro-verde);
       text-transform: uppercase;
-      background: linear-gradient(to right, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 5px;
+      letter-spacing: 1px;
     }
 
-    p.subtitle {
-      font-size: 0.9rem;
-      opacity: 0.6;
-      margin-bottom: 30px;
+    /* Scanner Area */
+    #login-screen {
+      padding: 20px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
-    /* Login Screen / Scanner */
-    #scanner-container {
+    #scanner-wrap {
       position: relative;
-      border-radius: 30px;
-      overflow: hidden;
-      border: 1px solid var(--glass-border);
-      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-    }
-
-    #video {
       width: 100%;
-      display: block;
-      background: #000;
+      border-radius: 15px;
+      overflow: hidden;
+      border: 3px solid var(--petro-verde);
     }
 
-    .scanner-frame {
+    #video { width: 100%; display: block; background: #000; }
+
+    .scan-line {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 200px;
-      height: 200px;
-      border: 2px solid var(--primary);
-      border-radius: 20px;
-      background: linear-gradient(var(--primary), var(--primary)) 50% 50% / 2px 100% no-repeat,
-                  linear-gradient(var(--primary), var(--primary)) 50% 50% / 100% 2px no-repeat;
-      background-size: 0% 0%; /* Linhas cruzadas suaves */
-      box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
-      animation: scan-pulse 2s infinite;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--petro-amarelo);
+      box-shadow: 0 0 15px var(--petro-amarelo);
+      animation: scan-move 3s linear infinite;
     }
 
-    @keyframes scan-pulse {
-      0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
-      50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+    @keyframes scan-move {
+      0% { top: 0; }
+      100% { top: 100%; }
     }
 
     #status {
       margin-top: 20px;
-      font-weight: 500;
-      color: var(--primary);
-      letter-spacing: 1px;
+      font-weight: bold;
+      color: var(--petro-verde);
     }
 
     /* Dashboard Layout */
     .hidden { display: none !important; }
 
-    .user-card {
-      background: var(--glass);
+    #dashboard-screen {
       padding: 20px;
-      border-radius: 20px;
-      border: 1px solid var(--glass-border);
-      margin-bottom: 25px;
-      backdrop-filter: blur(10px);
+      animation: fadeIn 0.5s ease;
     }
 
-    .user-card h2 { font-size: 1.4rem; color: #fff; }
-    
-    .badge {
-      display: inline-block;
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .user-info {
+      background: var(--petro-verde);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .user-info h2 { font-size: 1.2rem; margin-bottom: 5px; }
+    .cargo-tag {
+      background: var(--petro-amarelo);
+      color: var(--petro-verde);
       font-size: 0.75rem;
-      background: rgba(0, 212, 255, 0.15);
-      color: var(--secondary);
-      padding: 4px 12px;
-      border-radius: 10px;
-      border: 1px solid rgba(0, 212, 255, 0.3);
-      margin-top: 8px;
-      text-transform: uppercase;
       font-weight: bold;
+      padding: 3px 10px;
+      border-radius: 5px;
+      text-transform: uppercase;
     }
 
-    /* Metrics Grid */
+    /* Cards */
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 15px;
-      margin-bottom: 25px;
     }
 
     .card {
-      background: var(--glass);
-      padding: 20px;
-      border-radius: 20px;
-      border: 1px solid var(--glass-border);
-      text-align: left;
-      transition: transform 0.3s;
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      display: flex;
+      flex-direction: column;
     }
-
-    .card:active { transform: scale(0.98); }
 
     .card label {
-      display: block;
       font-size: 0.7rem;
+      font-weight: bold;
+      color: #777;
+      margin-bottom: 8px;
       text-transform: uppercase;
-      color: #888;
-      margin-bottom: 10px;
-      letter-spacing: 1px;
     }
 
-    .card .val {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--secondary);
+    .card .value {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--petro-verde);
     }
 
-    .full-width { grid-column: span 2; }
+    .full { grid-column: span 2; }
 
-    .alert-card {
-      border-left: 4px solid var(--alert);
-      background: rgba(255, 107, 107, 0.05);
+    .alert-box {
+      border-left: 5px solid #d9534f;
+      background: #fff5f5;
     }
-    
-    .alert-card .val { color: var(--alert); }
 
-    /* Footer / Logout */
-    .logout-btn {
+    .alert-box .value { color: #d9534f; }
+
+    /* Botão Sair */
+    .btn-logout {
+      margin-top: 30px;
       width: 100%;
-      background: transparent;
-      border: 1px solid var(--glass-border);
-      color: #888;
       padding: 15px;
-      border-radius: 15px;
+      border: none;
+      background: #e7e7e7;
+      color: #666;
+      font-weight: bold;
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 0.9rem;
-      transition: all 0.3s;
+      transition: 0.3s;
     }
 
-    .logout-btn:hover {
-      background: rgba(255, 107, 107, 0.1);
-      color: var(--alert);
-      border-color: var(--alert);
-    }
+    .btn-logout:hover { background: #dcdcdc; color: #333; }
   </style>
 </head>
 <body>
 
   <div class="container">
-    
-    <section id="login-screen">
-      <header>
-        <h1>Petrobras AR</h1>
-        <p class="subtitle">Identificação Industrial Requerida</p>
-      </header>
-
-      <div id="scanner-container">
-        <video id="video" autoplay muted playsinline></video>
-        <div class="scanner-frame"></div>
+    <header>
+      <div class="logo-container">
+        <div class="logo-mock">PETRO<span>BRAS</span></div>
       </div>
-      <p id="status">SCANNING...</p>
+      <h1>Controle de Acesso AR</h1>
+    </header>
+
+    <section id="login-screen">
+      <div id="scanner-wrap">
+        <video id="video" autoplay muted playsinline></video>
+        <div class="scan-line"></div>
+      </div>
+      <p id="status">POSICIONE O QR CODE</p>
     </section>
 
     <section id="dashboard-screen" class="hidden">
-      <div class="user-card">
-        <h2 id="welcome-name">---</h2>
-        <span id="user-cargo" class="badge">---</span>
+      <div class="user-info">
+        <h2 id="user-name">---</h2>
+        <span id="user-cargo" class="cargo-tag">---</span>
       </div>
 
       <div class="grid">
         <div class="card">
-          <label>Produção (24h)</label>
-          <span id="m-prod" class="val">---</span>
+          <label>⛽ Produção Diária</label>
+          <span id="m-prod" class="value">---</span>
         </div>
         <div class="card">
-          <label>Poços Ativos</label>
-          <span id="m-pocos" class="val">---</span>
+          <label>🏗️ Unidades</label>
+          <span id="m-pocos" class="value">---</span>
         </div>
-        <div id="orc-card" class="card full-width">
-          <label>Budget Disponível</label>
-          <span id="m-orc" class="val">---</span>
+        <div id="orc-card" class="card full">
+          <label>💳 Orçamento de Manutenção</label>
+          <span id="m-orc" class="value">---</span>
         </div>
-        <div class="card alert-card full-width">
-          <label>Alertas de Sistema</label>
-          <span id="m-alertas" class="val">---</span>
+        <div class="card full alert-box">
+          <label>⚠️ Alertas de Segurança</label>
+          <span id="m-alertas" class="value">---</span>
         </div>
       </div>
 
-      <button class="logout-btn" onclick="logout()">Encerrar Sessão com Segurança</button>
+      <button class="btn-logout" onclick="logout()">Encerrar Sessão</button>
     </section>
-
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
@@ -240,84 +248,86 @@
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     
-    const USERS = {
-      '123': { name: 'João Silva', cargo: 'Engenheiro Sênior', nivel: 'alto' },
-      '456': { name: 'Maria Santos', cargo: 'Analista Júnior', nivel: 'baixo' },
-      '789': { name: 'Carlos Oliveira', cargo: 'Gerente Operacional', nivel: 'alto' }
+    const DB_USUARIOS = {
+      '123': { nome: 'JOÃO SILVA', cargo: 'Engenheiro de Campo', nivel: 'alto' },
+      '456': { nome: 'MARIA SANTOS', cargo: 'Técnica de Operação', nivel: 'baixo' },
+      '789': { nome: 'CARLOS OLIVEIRA', cargo: 'Gerente de Plataforma', nivel: 'alto' }
     };
 
-    function startCamera() {
+    function iniciaCamera() {
       navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
         .then(stream => {
           video.srcObject = stream;
-          requestAnimationFrame(tick);
+          requestAnimationFrame(loop);
         })
-        .catch(err => {
-          document.getElementById('status').textContent = "ERRO DE CÂMERA";
+        .catch(() => {
+          document.getElementById('status').textContent = "CÂMERA NÃO DISPONÍVEL";
         });
     }
 
-    function tick() {
+    function loop() {
       if (video.readyState === video.HAVE_ENOUGH_DATA) {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, imageData.width, imageData.height);
+        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const qr = jsQR(img.data, img.width, img.height);
         
-        if (code) {
-          authenticate(code.data);
+        if (qr) {
+          validar(qr.data);
           return;
         }
       }
       if (!document.getElementById('login-screen').classList.contains('hidden')) {
-        requestAnimationFrame(tick);
+        requestAnimationFrame(loop);
       }
     }
 
-    function authenticate(token) {
-      const user = USERS[token];
+    function validar(id) {
+      const user = DB_USUARIOS[id];
       if (!user) {
-        document.getElementById('status').textContent = "ACESSO NEGADO";
-        setTimeout(() => document.getElementById('status').textContent = "SCANNING...", 2000);
+        document.getElementById('status').textContent = "ID NÃO CADASTRADO";
+        document.getElementById('status').style.color = "red";
+        setTimeout(() => {
+          document.getElementById('status').textContent = "POSICIONE O QR CODE";
+          document.getElementById('status').style.color = "#008542";
+        }, 2000);
         return;
       }
-      localStorage.setItem('petro_session', JSON.stringify(user));
-      renderDashboard(user);
+      localStorage.setItem('petro_auth', JSON.stringify(user));
+      carregarDash(user);
     }
 
-    function renderDashboard(user) {
+    function carregarDash(user) {
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('dashboard-screen').classList.remove('hidden');
       
-      document.getElementById('welcome-name').textContent = user.name;
+      document.getElementById('user-name').textContent = user.nome;
       document.getElementById('user-cargo').textContent = user.cargo;
 
-      const isAdmin = user.nivel === 'alto';
+      const admin = user.nivel === 'alto';
+      document.getElementById('m-prod').textContent = admin ? '2.450 bbl' : '1.980 bbl';
+      document.getElementById('m-pocos').textContent = admin ? '47 Poços' : '32 Poços';
+      document.getElementById('m-alertas').textContent = admin ? '2 ALERTAS ATIVOS' : 'NENHUM ALERTA';
       
-      // Simulação de Dados Dinâmicos
-      document.getElementById('m-prod').textContent = isAdmin ? '2.450 bbl' : '2.100 bbl';
-      document.getElementById('m-pocos').textContent = isAdmin ? '47' : '32';
-      document.getElementById('m-alertas').textContent = isAdmin ? '2 CRÍTICOS' : 'SEM ALERTAS';
-      
-      const orcCard = document.getElementById('orc-card');
-      if (isAdmin) {
-        orcCard.classList.remove('hidden');
-        document.getElementById('m-orc').textContent = '$ 12.450.000';
+      const orc = document.getElementById('orc-card');
+      if (admin) {
+        orc.style.display = 'flex';
+        document.getElementById('m-orc').textContent = 'R$ 12.450.000,00';
       } else {
-        orcCard.classList.add('hidden');
+        orc.style.display = 'none';
       }
     }
 
     function logout() {
-      localStorage.removeItem('petro_session');
+      localStorage.removeItem('petro_auth');
       location.reload();
     }
 
     window.onload = () => {
-      const saved = localStorage.getItem('petro_session');
-      if (saved) renderDashboard(JSON.parse(saved));
-      else startCamera();
+      const logado = localStorage.getItem('petro_auth');
+      if (logado) carregarDash(JSON.parse(logado));
+      else iniciaCamera();
     };
   </script>
 </body>
