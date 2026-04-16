@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Petrobras AR - Sistema Integrado</title>
+  <title>Petrobras AR - Acesso Restrito</title>
   
   <style>
     * {
@@ -67,21 +67,13 @@
       50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
     }
 
-    /* Admin Buttons */
-    .admin-qrs { margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 15px; }
-    .qr-buttons button {
-      background: rgba(0, 212, 255, 0.1);
-      border: 1px solid #00d4ff;
-      color: white;
-      padding: 8px 15px;
-      margin: 5px;
-      border-radius: 20px;
-      cursor: pointer;
-      transition: 0.3s;
+    #status {
+      font-size: 1.1em;
+      margin-top: 15px;
+      color: #00ff88;
     }
-    .qr-buttons button:hover { background: #00d4ff; color: #0f2027; }
 
-    /* Dashboard Elements */
+    /* Dashboard */
     .hidden { display: none; }
     .badge { display: inline-block; background: #00ff88; color: #0f2027; padding: 5px 15px; border-radius: 15px; font-weight: bold; margin-top: 10px; }
     
@@ -93,7 +85,7 @@
       display: flex; 
       justify-content: space-between; 
       align-items: center;
-      backdrop-filter: blur(5px);
+      backdrop-filter: blur(10px);
     }
     .value { font-weight: bold; color: #00d4ff; font-size: 1.2em; }
     .alert { border-left: 4px solid #ff6b6b; background: rgba(255, 107, 107, 0.1); }
@@ -102,10 +94,11 @@
     .ai-chat { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; text-align: left; }
     #chat-output { height: 150px; overflow-y: auto; font-size: 0.9em; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
     .chat-input { display: flex; gap: 5px; }
-    .chat-input input { flex: 1; padding: 10px; border-radius: 10px; border: none; }
-    .chat-input button { padding: 10px; background: #00d4ff; border: none; border-radius: 10px; cursor: pointer; }
+    .chat-input input { flex: 1; padding: 12px; border-radius: 10px; border: none; outline: none; }
+    .chat-input button { padding: 0 15px; background: #00d4ff; border: none; border-radius: 10px; cursor: pointer; color: #0f2027; font-weight: bold; }
 
-    .logout-btn { margin-top: 20px; background: transparent; border: 1px solid #ff6b6b; color: #ff6b6b; padding: 10px 20px; border-radius: 10px; cursor: pointer; }
+    .logout-btn { margin-top: 30px; background: transparent; border: 1px solid #ff6b6b; color: #ff6b6b; padding: 12px 25px; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+    .logout-btn:hover { background: #ff6b6b; color: white; }
   </style>
 </head>
 <body>
@@ -114,7 +107,7 @@
     <section id="login-screen">
       <header>
         <h1>🔒 Petrobras AR</h1>
-        <p>Autenticação Biométrica/QR</p>
+        <p>Aponte para o QR Code de identificação</p>
       </header>
 
       <div id="scanner-container">
@@ -122,15 +115,6 @@
         <div class="scanner-frame"></div>
       </div>
       <p id="status">Aguardando leitura...</p>
-
-      <div class="admin-qrs">
-        <p style="font-size: 0.8em; margin-bottom: 10px; opacity: 0.7;">Simular Acesso (Desenvolvimento):</p>
-        <div class="qr-buttons">
-          <button onclick="login('123')">Engenheiro</button>
-          <button onclick="login('456')">Analista</button>
-          <button onclick="login('789')">Gerente</button>
-        </div>
-      </div>
     </section>
 
     <section id="dashboard-screen" class="hidden">
@@ -149,12 +133,12 @@
       <div class="ai-chat">
         <div id="chat-output"><div><strong>IA:</strong> Sistema pronto. Como posso ajudar?</div></div>
         <div class="chat-input">
-          <input type="text" id="chat-input" placeholder="Pergunte algo...">
+          <input type="text" id="chat-input" placeholder="Pergunte ao assistente...">
           <button onclick="sendChat()">➤</button>
         </div>
       </div>
 
-      <button class="logout-btn" onclick="logout()">Sair do Sistema</button>
+      <button class="logout-btn" onclick="logout()">Encerrar Sessão</button>
     </section>
   </div>
 
@@ -164,21 +148,23 @@
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     
-    // Banco de Dados Simulado
+    // Cadastro de Usuários Permitidos
     const USERS = {
       '123': { name: 'João Silva', cargo: 'Engenheiro Sênior', nivel: 'alto' },
       '456': { name: 'Maria Santos', cargo: 'Analista Júnior', nivel: 'baixo' },
       '789': { name: 'Carlos Oliveira', cargo: 'Gerente Operacional', nivel: 'alto' }
     };
 
-    // Inicializar Câmera
     function startCamera() {
       navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
         .then(stream => {
           video.srcObject = stream;
           requestAnimationFrame(tick);
         })
-        .catch(err => console.error("Erro na câmera: ", err));
+        .catch(err => {
+          document.getElementById('status').innerHTML = "❌ Erro ao acessar câmera.<br>Verifique se está usando HTTPS.";
+          console.error(err);
+        });
     }
 
     function tick() {
@@ -190,8 +176,8 @@
         const code = jsQR(imageData.data, imageData.width, imageData.height);
         
         if (code) {
-          login(code.data);
-          return; // Para o loop após logar
+          authenticate(code.data);
+          return;
         }
       }
       if (!document.getElementById('login-screen').classList.contains('hidden')) {
@@ -199,15 +185,18 @@
       }
     }
 
-    function login(token) {
+    function authenticate(token) {
       const user = USERS[token];
       if (!user) {
-        document.getElementById('status').textContent = '❌ QR Inválido';
-        setTimeout(() => document.getElementById('status').textContent = 'Aguardando leitura...', 2000);
+        document.getElementById('status').textContent = '❌ Usuário não reconhecido';
+        document.getElementById('status').style.color = '#ff6b6b';
+        setTimeout(() => {
+          document.getElementById('status').textContent = 'Aguardando leitura...';
+          document.getElementById('status').style.color = '#00ff88';
+        }, 2000);
         return;
       }
 
-      // Salva sessão e troca telas
       localStorage.setItem('petro_user', JSON.stringify(user));
       showDashboard(user);
     }
@@ -219,7 +208,6 @@
       document.getElementById('welcome-msg').textContent = `Olá, ${user.name.split(' ')[0]}!`;
       document.getElementById('user-badge').textContent = user.cargo;
 
-      // Dados baseados no nível
       const isAdmin = user.nivel === 'alto';
       document.getElementById('m-prod').textContent = isAdmin ? '2.450 bbl' : '2.100 bbl';
       document.getElementById('m-pocos').textContent = isAdmin ? '47' : '32';
@@ -243,9 +231,12 @@
 
       output.innerHTML += `<div><strong>Você:</strong> ${input.value}</div>`;
       
-      let resp = "Não tenho acesso a essa informação no momento.";
-      if (input.value.toLowerCase().includes('status')) resp = "Todos os sistemas operando dentro da normalidade.";
-      if (user.cargo.includes('Engenheiro')) resp = "Pressão no poço P-57 subiu 2%. Recomendo checagem.";
+      let resp = "Não localizei dados específicos sobre sua consulta.";
+      const msg = input.value.toLowerCase();
+
+      if (msg.includes('status')) resp = "Sistemas operando em regime de eficiência nominal.";
+      if (msg.includes('produção') || msg.includes('barris')) resp = `A produção atual é de ${user.nivel === 'alto' ? '2.450' : '2.100'} barris.`;
+      if (user.cargo.includes('Engenheiro') && msg.includes('alerta')) resp = "Alerta no Poço X-15: Vibração acima da média detectada.";
 
       setTimeout(() => {
         output.innerHTML += `<div><strong>IA:</strong> ${resp}</div>`;
@@ -259,7 +250,6 @@
       location.reload();
     }
 
-    // Checar se já está logado ao abrir
     window.onload = () => {
       const savedUser = localStorage.getItem('petro_user');
       if (savedUser) {
@@ -268,6 +258,11 @@
         startCamera();
       }
     };
+
+    // Suporte para tecla Enter no chat
+    document.getElementById('chat-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendChat();
+    });
   </script>
 </body>
 </html>
