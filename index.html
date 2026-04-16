@@ -3,9 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Petrobras AR - Acesso Restrito</title>
+  <title>Petrobras AR - Smart Dashboard</title>
   
   <style>
+    :root {
+      --primary: #00ff88;
+      --secondary: #00d4ff;
+      --alert: #ff6b6b;
+      --bg: #0f2027;
+      --glass: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -13,39 +22,50 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      color: white;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(circle at top, #203a43, #0f2027);
+      color: #e0e0e0;
       min-height: 100vh;
       display: flex;
       justify-content: center;
+      line-height: 1.6;
     }
 
     .container {
       width: 100%;
-      max-width: 500px;
-      padding: 20px;
-      text-align: center;
+      max-width: 450px;
+      padding: 30px 20px;
     }
 
-    header h1 {
-      font-size: 2.2em;
-      background: linear-gradient(45deg, #00d4ff, #00ff88);
+    /* Typography */
+    h1 {
+      font-size: 1.8rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       margin-bottom: 5px;
     }
 
-    /* Scanner */
+    p.subtitle {
+      font-size: 0.9rem;
+      opacity: 0.6;
+      margin-bottom: 30px;
+    }
+
+    /* Login Screen / Scanner */
     #scanner-container {
       position: relative;
-      margin: 30px 0;
+      border-radius: 30px;
+      overflow: hidden;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
     }
 
     #video {
       width: 100%;
-      border-radius: 20px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+      display: block;
       background: #000;
     }
 
@@ -54,92 +74,164 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 220px;
-      height: 220px;
-      border: 3px solid #00ff88;
+      width: 200px;
+      height: 200px;
+      border: 2px solid var(--primary);
       border-radius: 20px;
-      box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
-      animation: pulse 2s infinite;
+      background: linear-gradient(var(--primary), var(--primary)) 50% 50% / 2px 100% no-repeat,
+                  linear-gradient(var(--primary), var(--primary)) 50% 50% / 100% 2px no-repeat;
+      background-size: 0% 0%; /* Linhas cruzadas suaves */
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+      animation: scan-pulse 2s infinite;
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+    @keyframes scan-pulse {
+      0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
       50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
     }
 
     #status {
-      font-size: 1.1em;
-      margin-top: 15px;
-      color: #00ff88;
+      margin-top: 20px;
+      font-weight: 500;
+      color: var(--primary);
+      letter-spacing: 1px;
     }
 
-    /* Dashboard */
-    .hidden { display: none; }
-    .badge { display: inline-block; background: #00ff88; color: #0f2027; padding: 5px 15px; border-radius: 15px; font-weight: bold; margin-top: 10px; }
-    
-    .metrics { display: grid; gap: 15px; margin: 25px 0; }
-    .metric { 
-      background: rgba(255,255,255,0.1); 
-      padding: 15px; 
-      border-radius: 12px; 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center;
+    /* Dashboard Layout */
+    .hidden { display: none !important; }
+
+    .user-card {
+      background: var(--glass);
+      padding: 20px;
+      border-radius: 20px;
+      border: 1px solid var(--glass-border);
+      margin-bottom: 25px;
       backdrop-filter: blur(10px);
     }
-    .value { font-weight: bold; color: #00d4ff; font-size: 1.2em; }
-    .alert { border-left: 4px solid #ff6b6b; background: rgba(255, 107, 107, 0.1); }
 
-    /* Chat */
-    .ai-chat { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; text-align: left; }
-    #chat-output { height: 150px; overflow-y: auto; font-size: 0.9em; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .chat-input { display: flex; gap: 5px; }
-    .chat-input input { flex: 1; padding: 12px; border-radius: 10px; border: none; outline: none; }
-    .chat-input button { padding: 0 15px; background: #00d4ff; border: none; border-radius: 10px; cursor: pointer; color: #0f2027; font-weight: bold; }
+    .user-card h2 { font-size: 1.4rem; color: #fff; }
+    
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      background: rgba(0, 212, 255, 0.15);
+      color: var(--secondary);
+      padding: 4px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      margin-top: 8px;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
 
-    .logout-btn { margin-top: 30px; background: transparent; border: 1px solid #ff6b6b; color: #ff6b6b; padding: 12px 25px; border-radius: 10px; cursor: pointer; transition: 0.3s; }
-    .logout-btn:hover { background: #ff6b6b; color: white; }
+    /* Metrics Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .card {
+      background: var(--glass);
+      padding: 20px;
+      border-radius: 20px;
+      border: 1px solid var(--glass-border);
+      text-align: left;
+      transition: transform 0.3s;
+    }
+
+    .card:active { transform: scale(0.98); }
+
+    .card label {
+      display: block;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+
+    .card .val {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--secondary);
+    }
+
+    .full-width { grid-column: span 2; }
+
+    .alert-card {
+      border-left: 4px solid var(--alert);
+      background: rgba(255, 107, 107, 0.05);
+    }
+    
+    .alert-card .val { color: var(--alert); }
+
+    /* Footer / Logout */
+    .logout-btn {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--glass-border);
+      color: #888;
+      padding: 15px;
+      border-radius: 15px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255, 107, 107, 0.1);
+      color: var(--alert);
+      border-color: var(--alert);
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
+    
     <section id="login-screen">
       <header>
-        <h1>🔒 Petrobras AR</h1>
-        <p>Aponte para o QR Code de identificação</p>
+        <h1>Petrobras AR</h1>
+        <p class="subtitle">Identificação Industrial Requerida</p>
       </header>
 
       <div id="scanner-container">
         <video id="video" autoplay muted playsinline></video>
         <div class="scanner-frame"></div>
       </div>
-      <p id="status">Aguardando leitura...</p>
+      <p id="status">SCANNING...</p>
     </section>
 
     <section id="dashboard-screen" class="hidden">
-      <header>
-        <h2 id="welcome-msg">Olá!</h2>
-        <span id="user-badge" class="badge"></span>
-      </header>
-
-      <div class="metrics">
-        <div class="metric"><p>🛢️ Produção</p><p id="m-prod" class="value"></p></div>
-        <div class="metric"><p>📍 Poços Ativos</p><p id="m-pocos" class="value"></p></div>
-        <div id="orcamento-row" class="metric"><p>💰 Orçamento</p><p id="m-orc" class="value"></p></div>
-        <div class="metric alert"><p>🚨 Alertas</p><p id="m-alertas" class="value"></p></div>
+      <div class="user-card">
+        <h2 id="welcome-name">---</h2>
+        <span id="user-cargo" class="badge">---</span>
       </div>
 
-      <div class="ai-chat">
-        <div id="chat-output"><div><strong>IA:</strong> Sistema pronto. Como posso ajudar?</div></div>
-        <div class="chat-input">
-          <input type="text" id="chat-input" placeholder="Pergunte ao assistente...">
-          <button onclick="sendChat()">➤</button>
+      <div class="grid">
+        <div class="card">
+          <label>Produção (24h)</label>
+          <span id="m-prod" class="val">---</span>
+        </div>
+        <div class="card">
+          <label>Poços Ativos</label>
+          <span id="m-pocos" class="val">---</span>
+        </div>
+        <div id="orc-card" class="card full-width">
+          <label>Budget Disponível</label>
+          <span id="m-orc" class="val">---</span>
+        </div>
+        <div class="card alert-card full-width">
+          <label>Alertas de Sistema</label>
+          <span id="m-alertas" class="val">---</span>
         </div>
       </div>
 
-      <button class="logout-btn" onclick="logout()">Encerrar Sessão</button>
+      <button class="logout-btn" onclick="logout()">Encerrar Sessão com Segurança</button>
     </section>
+
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
@@ -148,7 +240,6 @@
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     
-    // Cadastro de Usuários Permitidos
     const USERS = {
       '123': { name: 'João Silva', cargo: 'Engenheiro Sênior', nivel: 'alto' },
       '456': { name: 'Maria Santos', cargo: 'Analista Júnior', nivel: 'baixo' },
@@ -162,8 +253,7 @@
           requestAnimationFrame(tick);
         })
         .catch(err => {
-          document.getElementById('status').innerHTML = "❌ Erro ao acessar câmera.<br>Verifique se está usando HTTPS.";
-          console.error(err);
+          document.getElementById('status').textContent = "ERRO DE CÂMERA";
         });
     }
 
@@ -188,81 +278,47 @@
     function authenticate(token) {
       const user = USERS[token];
       if (!user) {
-        document.getElementById('status').textContent = '❌ Usuário não reconhecido';
-        document.getElementById('status').style.color = '#ff6b6b';
-        setTimeout(() => {
-          document.getElementById('status').textContent = 'Aguardando leitura...';
-          document.getElementById('status').style.color = '#00ff88';
-        }, 2000);
+        document.getElementById('status').textContent = "ACESSO NEGADO";
+        setTimeout(() => document.getElementById('status').textContent = "SCANNING...", 2000);
         return;
       }
-
-      localStorage.setItem('petro_user', JSON.stringify(user));
-      showDashboard(user);
+      localStorage.setItem('petro_session', JSON.stringify(user));
+      renderDashboard(user);
     }
 
-    function showDashboard(user) {
+    function renderDashboard(user) {
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('dashboard-screen').classList.remove('hidden');
       
-      document.getElementById('welcome-msg').textContent = `Olá, ${user.name.split(' ')[0]}!`;
-      document.getElementById('user-badge').textContent = user.cargo;
+      document.getElementById('welcome-name').textContent = user.name;
+      document.getElementById('user-cargo').textContent = user.cargo;
 
       const isAdmin = user.nivel === 'alto';
+      
+      // Simulação de Dados Dinâmicos
       document.getElementById('m-prod').textContent = isAdmin ? '2.450 bbl' : '2.100 bbl';
       document.getElementById('m-pocos').textContent = isAdmin ? '47' : '32';
-      document.getElementById('m-alertas').textContent = isAdmin ? '2' : '0';
+      document.getElementById('m-alertas').textContent = isAdmin ? '2 CRÍTICOS' : 'SEM ALERTAS';
       
-      const orcRow = document.getElementById('orcamento-row');
+      const orcCard = document.getElementById('orc-card');
       if (isAdmin) {
-        orcRow.style.display = 'flex';
-        document.getElementById('m-orc').textContent = '$12.4M';
+        orcCard.classList.remove('hidden');
+        document.getElementById('m-orc').textContent = '$ 12.450.000';
       } else {
-        orcRow.style.display = 'none';
+        orcCard.classList.add('hidden');
       }
     }
 
-    function sendChat() {
-      const input = document.getElementById('chat-input');
-      const output = document.getElementById('chat-output');
-      const user = JSON.parse(localStorage.getItem('petro_user'));
-
-      if (!input.value) return;
-
-      output.innerHTML += `<div><strong>Você:</strong> ${input.value}</div>`;
-      
-      let resp = "Não localizei dados específicos sobre sua consulta.";
-      const msg = input.value.toLowerCase();
-
-      if (msg.includes('status')) resp = "Sistemas operando em regime de eficiência nominal.";
-      if (msg.includes('produção') || msg.includes('barris')) resp = `A produção atual é de ${user.nivel === 'alto' ? '2.450' : '2.100'} barris.`;
-      if (user.cargo.includes('Engenheiro') && msg.includes('alerta')) resp = "Alerta no Poço X-15: Vibração acima da média detectada.";
-
-      setTimeout(() => {
-        output.innerHTML += `<div><strong>IA:</strong> ${resp}</div>`;
-        output.scrollTop = output.scrollHeight;
-      }, 600);
-      input.value = '';
-    }
-
     function logout() {
-      localStorage.removeItem('petro_user');
+      localStorage.removeItem('petro_session');
       location.reload();
     }
 
     window.onload = () => {
-      const savedUser = localStorage.getItem('petro_user');
-      if (savedUser) {
-        showDashboard(JSON.parse(savedUser));
-      } else {
-        startCamera();
-      }
+      const saved = localStorage.getItem('petro_session');
+      if (saved) renderDashboard(JSON.parse(saved));
+      else startCamera();
     };
-
-    // Suporte para tecla Enter no chat
-    document.getElementById('chat-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendChat();
-    });
   </script>
 </body>
 </html>
